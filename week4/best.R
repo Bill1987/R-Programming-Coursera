@@ -1,42 +1,25 @@
-best <- function(state, outcome) {
-    
-    ## Read outcome data
-    outcome_data <- read.csv('data/outcome-of-care-measures.csv',stringsAsFactors = FALSE)
-    
-    ## Check that state and outcome are valid
-    states_all <- unique(outcome_data$State)    ##全部状态标�?
-    if(!is.element(state, states_all)){
-        stop("invalid state")
-    }
+source("hospitalHelper.R")
 
-    outcome_colname <- c("")        ##获取对应列名�?
-    if (outcome == "heart attack") {
-        outcome_colname <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
-    } else if (outcome == "heart failure") {
-        outcome_colname <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
-    } else if (outcome == "pneumonia"){
-        outcome_colname <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
-    } else{
-        stop("invalid outcome")
-    }
-    
+best <- function(state, outcome) {
     ## Return hospital name in that state with lowest 30-day death
     ## rate 
-    suppressWarnings(outcome_data[,outcome_colname] <- as.numeric(outcome_data[,outcome_colname]))  ##将数据强制转换为数值型
+    outcome_colname <- getColName(outcome)
+    
+    hospital_data <- loadHospitalData()
+    outcome_data <- getOutcomeDataByState(hospital_data,outcome_colname,state)
+    
+	## get lowest death data
+    min_Death <- min(outcome_data[,outcome_colname]) 
+    outcome_best <- outcome_data[outcome_data[outcome_colname] == min_Death,]
 
-    outcome_complete = outcome_data[complete.cases(outcome_data[outcome_colname]),]         ##去掉空数据的全部有效数据
-    outcome_state <- outcome_complete[outcome_complete$State == state,]      ##得到匹配state的数�?
-
-    min_Death <- min(outcome_state[,outcome_colname])     ##获取死亡率最低的数据
-    outcome_best <- outcome_state[outcome_state[outcome_colname] == min_Death,]
-
-    hospitals <- sort(outcome_best[,"Hospital.Name"])       ##按字母排序医�?
+	## in alphabetical order by hospitals
+    hospitals <- sort(outcome_best[,"Hospital.Name"])    
 
     return(hospitals[1])
 }
 
 #----------------------------------------------------
-# # 测试数据
+# # example:
 #  > source("best.R")
 #  > best("TX", "heart attack")
 #  [1] "CYPRESS FAIRBANKS MEDICAL CENTER"
