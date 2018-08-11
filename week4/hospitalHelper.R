@@ -60,7 +60,7 @@ getOutcomeDataByState <- function(outcome_data,outcome_colname,state){
     suppressWarnings(outcome_data[,outcome_colname] <- as.numeric(outcome_data[,outcome_colname]))
     
     ## ignoring NA values
-    outcome_complete = outcome_data[complete.cases(outcome_data[outcome_colname]),] 
+    outcome_complete <- outcome_data[complete.cases(outcome_data[outcome_colname]),] 
     outcome_complete <- outcome_complete[outcome_complete$State == state,] 
     
     return(outcome_complete)
